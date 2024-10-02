@@ -1,5 +1,6 @@
 import 'package:english_words/english_words.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
 
 void main() {
@@ -32,6 +33,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   var selectedIndex = 0;
+
   @override
   Widget build(BuildContext context) {
     Widget page;
@@ -40,7 +42,13 @@ class _MyHomePageState extends State<MyHomePage> {
         page = GeneratorPage();
         break;
       case 1:
-        page = FavoritePage();
+        page = Produto();
+        break;
+      case 2:
+        page = Carrinho();
+        break;
+      case 3:
+        page = Ajuda();
         break;
       default:
         throw UnimplementedError('no widget for $selectedIndex');
@@ -54,13 +62,21 @@ class _MyHomePageState extends State<MyHomePage> {
               child: NavigationRail(
                 extended: constraints.maxWidth >= 600,
                 destinations: [
-                  NavigationRailDestination(
-                    icon: Icon(Icons.home),
-                    label: Text('Home'),
+                  const NavigationRailDestination(
+                    icon: Icon(Icons.person),
+                    label: Text('Perfil'),
                   ),
-                  NavigationRailDestination(
-                    icon: Icon(Icons.favorite),
-                    label: Text('Favorites'),
+                  const NavigationRailDestination(
+                    icon: Icon(Icons.shopping_basket),
+                    label: Text('Produto'),
+                  ),
+                  const NavigationRailDestination(
+                    icon: Icon(Icons.add_shopping_cart),
+                    label: Text('Carrinho'),
+                  ),
+                  const NavigationRailDestination(
+                    icon: Icon(Icons.help),
+                    label: Text('Ajuda'),
                   ),
                 ],
                 selectedIndex: selectedIndex,
@@ -86,45 +102,50 @@ class _MyHomePageState extends State<MyHomePage> {
 }
 
 class GeneratorPage extends StatelessWidget {
+  var _controller = TextEditingController();
+  var _controller2 = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     var appState = context.watch<MyAppState>();
-    var pair = appState.current;
 
-    IconData icon;
-    if (appState.favorites.contains(pair)) {
-      icon = Icons.favorite;
-    } else {
-      icon = Icons.favorite_border;
-    }
-
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          BigCard(pair: pair),
-          SizedBox(height: 10),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ElevatedButton.icon(
-                onPressed: () {
-                  appState.marcarFavorito();
-                },
-                icon: Icon(icon),
-                label: Text('Like'),
-              ),
-              SizedBox(width: 10),
-              ElevatedButton(
-                onPressed: () {
-                  appState.getNext();
-                },
-                child: Text('Next'),
-              ),
-            ],
+    return ListView(
+      children: <Widget>[
+        Center(
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Text("Acesso ao perfil"),
           ),
-        ],
-      ),
+        ),
+        TextFormField(
+          controller: _controller,
+          decoration: InputDecoration(hintText: 'Nome Completo'),
+          maxLength: 100,
+          //validator: _validarName,
+          onSaved: (String? val) {},
+        ),
+        TextFormField(
+            controller: _controller2,
+            decoration: InputDecoration(hintText: 'Idade'),
+            keyboardType: TextInputType.number,
+            maxLength: 3,
+            //validator: _validarIdade,
+            onSaved: (String? val) {}),
+        SizedBox(height: 15.0),
+        ElevatedButton(
+          onPressed: () {
+            // TO DO:
+          },
+          child: Text('Enviar'),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            _controller.clear();
+            _controller2.clear();
+          },
+          child: Text('Limpar'),
+        )
+      ],
     );
   }
 }
@@ -179,11 +200,47 @@ class MyAppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  void removeFavorito(var pair) {
+  void removerFavorito(var pair) {
     if (favorites.contains(pair)) {
       favorites.remove(pair);
     }
     notifyListeners();
+  }
+}
+
+class Carrinho extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return const Center(
+      child: Text('Carrinho'),
+    );
+  }
+}
+
+class Ajuda extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return const Center(
+      child: Text('Ajuda'),
+    );
+  }
+}
+
+class Produto extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return const Center(
+      child: Text('Produto'),
+    );
+  }
+}
+
+class Perfil extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return const Center(
+      child: Text('Perfil'),
+    );
   }
 }
 
@@ -196,23 +253,23 @@ class FavoritePage extends StatelessWidget {
         child: Text('No favorites yet.'),
       );
     }
+
     return ListView(
       children: [
         Padding(
           padding: const EdgeInsets.all(20),
           child: Text('You have'
-              '${appState.favorites.length} Favorites:'),
+              '${appState.favorites.length} favorites: '),
         ),
         for (var pair in appState.favorites)
           ListTile(
-              leading: Icon(Icons.delete_outline),
-              title: Text(pair.asCamelCase),
-              onTap: () {
-                appState.removeFavorito(pair);
-              })
+            leading: Icon(Icons.delete_outline),
+            title: Text(pair.asCamelCase),
+            onTap: () {
+              appState.removerFavorito(pair);
+            },
+          ),
       ],
     );
-
-    throw UnimplementedError();
   }
 }
